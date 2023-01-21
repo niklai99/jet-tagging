@@ -1,3 +1,14 @@
+# Author: Nicolò Lai
+# Date: 2023-21-01
+#
+# Description: 
+# This script reads the ROOT file, extracts the features of the jets and particles, and saves them in a CSV file.
+# The input file, output files, and data directory can be specified with the -in, -jet, -par, and -dir flags.
+# The default values are extracted_data.root, jet_df.csv, particle_df.csv, and ./data/ respectively.
+# The script can be run with the command: python make_dataset.py
+# The script can be run with the command: python make_dataset.py -in extracted_data.root -jet jet_df.csv -par particle_df.csv -dir ./data/
+
+
 import argparse
 import numpy as np
 import pandas as pd
@@ -5,10 +16,10 @@ import pandas as pd
 from Dataset import Dataset
 
 
+
 def argParser():
     """ 
     Summary:
-        This function parses arguments to the program.
         The input file, output file, and data directory can be specified with the -in, -jet, -par, and -dir flags.
         The default values are extracted_data.root, jet_df.csv, particle_df.csv, and ./data/ respectively.
         The function returns a parser object.
@@ -30,21 +41,19 @@ def argParser():
     parser.add_argument('-v', '--verbose', action='store_true', default=False, help="verbose output")
 
     # Return the parser object
-    return parser.parse_args()
+    return parser
 
 
 def parseArgs(parser):
     """ 
     Summary:
         This function parses the arguments to the program.
-        The input file, output file, and data directory can be specified with the -in, -jet, -par, and -dir flags.
-        The default values are extracted_data.root, jet_df.csv, particle_df.csv, and ./data/ respectively.
         The function returns the input file, output file, and data directory.
 
     Returns:
-        input_file: input file name
-        output_file: output file name
-        data_dir: data directory
+        input_file  [str] : input file name
+        output_file [str] : output file name
+        data_dir    [str] : data directory
     """
 
     # Parse the arguments
@@ -56,7 +65,8 @@ def parseArgs(parser):
 
 def getJetFeatures(dataset):
     """
-    Returns the features of the jets in the dataset.
+    Summary:
+        Extracts the features of the jets in the dataset.
 
     Args:
         dataset (Dataset): The dataset to get the features of.
@@ -66,23 +76,25 @@ def getJetFeatures(dataset):
     """
     
     return {
-        "jetID": dataset.getJetID(),
-        "jetArea": dataset.getJetArea(),
-        "jetPx": dataset.getJetPx(),
-        "jetPy": dataset.getJetPy(),
-        "jetPz": dataset.getJetPz(),
-        "jetE": dataset.getJetE(),
-        "jetPolarPx": dataset.getJetPolarPx(),
-        "jetPolarPy": dataset.getJetPolarPy(),
-        "jetPolarPz": dataset.getJetPolarPz(),
-        "jetPolarE": dataset.getJetPolarE(),
-        "jetPhi": dataset.getJetPhi(),
-        "jetTheta": dataset.getJetTheta(),
+        "jetID":        dataset.getJetID(),
+        "jetArea":      dataset.getJetArea(),
+        "jetPx":        dataset.getJetPx(),
+        "jetPy":        dataset.getJetPy(),
+        "jetPz":        dataset.getJetPz(),
+        "jetE":         dataset.getJetE(),
+        "jetPolarPx":   dataset.getJetPolarPx(),
+        "jetPolarPy":   dataset.getJetPolarPy(),
+        "jetPolarPz":   dataset.getJetPolarPz(),
+        "jetPolarE":    dataset.getJetPolarE(),
+        "jetPhi":       dataset.getJetPhi(),
+        "jetTheta":     dataset.getJetTheta(),
     }
     
 
 def getParticleFeatures(dataset):
-    """Extracts the features for each particle in a dataset.
+    """
+    Summary:
+        Extracts the features of the particle in the dataset.
     
     Args:
         dataset (Dataset): The dataset to extract features for.
@@ -92,20 +104,20 @@ def getParticleFeatures(dataset):
     """
     
     return {
-        "particleType": dataset.getParticleType(),
-        "particleVx": dataset.getParticleVx(),
-        "particleVy": dataset.getParticleVy(),
-        "particleVz": dataset.getParticleVz(),
-        "particlePx": dataset.getParticlePx(),
-        "particlePy": dataset.getParticlePy(),
-        "particlePz": dataset.getParticlePz(),
-        "particleE": dataset.getParticleE(),
-        "particlePolarPx": dataset.getParticlePolarPx(),
-        "particlePolarPy": dataset.getParticlePolarPy(),
-        "particlePolarPz": dataset.getParticlePolarPz(),
-        "particlePolarE": dataset.getParticlePolarE(),
-        "particlePhi": dataset.getParticlePhi(),
-        "particleTheta": dataset.getParticleTheta(),
+        "particleType":     dataset.getParticleType(),
+        "particleVx":       dataset.getParticleVx(),
+        "particleVy":       dataset.getParticleVy(),
+        "particleVz":       dataset.getParticleVz(),
+        "particlePx":       dataset.getParticlePx(),
+        "particlePy":       dataset.getParticlePy(),
+        "particlePz":       dataset.getParticlePz(),
+        "particleE":        dataset.getParticleE(),
+        "particlePolarPx":  dataset.getParticlePolarPx(),
+        "particlePolarPy":  dataset.getParticlePolarPy(),
+        "particlePolarPz":  dataset.getParticlePolarPz(),
+        "particlePolarE":   dataset.getParticlePolarE(),
+        "particlePhi":      dataset.getParticlePhi(),
+        "particleTheta":    dataset.getParticleTheta(),
     }
     
     
@@ -124,7 +136,7 @@ def buildJetDataFrame(jet_features, par_features):
     
     # Initialize the columns of the DataFrame and add the event ID
     ev_id = np.arange(0, len(jet_features["jetID"]), 1, dtype=np.int16)
-    jet_columns = jet_features.keys()
+    jet_columns = ["eventID"] + list(jet_features.keys())[:1] + ["nParticles"] + list(jet_features.keys())[1:]
     jet_df = pd.DataFrame(columns=jet_columns)
 
     # Loop over the events
@@ -157,7 +169,7 @@ def buildJetDataFrame(jet_features, par_features):
             jet_df = jet_df.append(pd.DataFrame(jet_row.reshape(1, -1), columns=jet_columns), ignore_index=True)
             
     # Set the correct data type for each column
-    jet_df["evID"]       = jet_df["evID"].astype(np.int16)
+    jet_df["eventID"]    = jet_df["eventID"].astype(np.int16)
     jet_df["jetID"]      = jet_df["jetID"].astype(np.int16)
     jet_df["nParticles"] = jet_df["nParticles"].astype(np.int16)
     
@@ -179,7 +191,7 @@ def buildParticleDataFrame(jet_features, par_features):
     
     # Initialize the columns of the DataFrame and add the event ID
     ev_id = np.arange(0, len(jet_features["jetID"]), 1, dtype=np.int16)
-    particle_columns = par_features.keys()
+    particle_columns = ["eventID"] + ["jetID"] + list(par_features.keys())
     par_df = pd.DataFrame(columns=particle_columns)
 
     # Loop over the events
@@ -219,14 +231,15 @@ def buildParticleDataFrame(jet_features, par_features):
                 offset += n
 
     # Set the correct data type for each column
-    par_df["evID"]          = par_df["evID"].astype(np.int16)
+    par_df["eventID"]       = par_df["eventID"].astype(np.int16)
     par_df["jetID"]         = par_df["jetID"].astype(np.int16)
     par_df["particleType"]  = par_df["particleType"].astype(np.int16)
     
     return par_df
     
  
-def main(): 
+def main():  
+    
     # Load the input file
     input_file, jet_output, par_output, directory, verbose = parseArgs(argParser())
     # Append a slash to the directory if necessary
@@ -237,37 +250,44 @@ def main():
     jet_output = directory + jet_output
     # Construct the full path to the parameter output file
     par_output = directory + par_output
-    
+
     # Load the data into a Dataset object
     dataset = Dataset(fname=input_data)
-    
+
     if verbose:
+        print()
         print("Loading data from file: " + input_data)
-        print("Jet output file: " + jet_output)
-        print("Particle output file: " + par_output)
-        
+        print("Jet output file: "        + jet_output)
+        print("Particle output file: "   + par_output)
+        print()
+
     # get the jet features
     if verbose:
         print("Getting jet features...")
     jet_features = getJetFeatures(dataset)
-    
+
     # get the particle features
     if verbose:
         print("Getting particle features...")
     par_features = getParticleFeatures(dataset)
- 
+              
+          
+
     # build jet dataframe
     if verbose:
+        print()
         print("Building jet DataFrame...")
-    jet_df = buildJetDataFrame(jet_features)
-    
+    jet_df = buildJetDataFrame(jet_features, par_features)
+
     # save jet dataframe to a csv file
     if verbose:
         print("Saving jet DataFrame to file...")
     jet_df.to_csv(jet_output, index=False)
-    
+
+
     # build particle dataframe
     if verbose:
+        print()
         print("Building particle DataFrame...")
     par_df = buildParticleDataFrame(jet_features, par_features)
 
@@ -279,4 +299,5 @@ def main():
  
  
 if __name__ == '__main__' : 
+    # execute only if run as a script
     main()
