@@ -75,3 +75,69 @@ def display_statistics(data, ax, fontsize=16, align="left", x=0.05, y=0.95, step
     ax.text(x, y-5*step, f"Mode: {mode:.2f}",     fontsize=fontsize, transform=ax.transAxes, ha="left")
     
     return ax
+
+
+
+def plot_1Dstack(
+        fig, 
+        data,
+        hue, 
+        bins         = 100, 
+        xlab         = "x", 
+        ylab         = "y", 
+        title        = "Title",
+        ax           = None,
+        ax_id        = 1,
+        nrows        = 1,
+        ncols        = 1,
+        fontsize     = 14,
+        legend       = True,   
+        legend_title = "Particle",
+        legend_out   = True,
+    ):
+    
+    # Set the font family
+    plt.rcParams["font.family"] = "serif"
+    
+    # Check if an axis was passed to the function. If not, create one.
+    if ax is None:
+        ax = fig.add_subplot(nrows, ncols, ax_id)
+    
+    # create a temporary dataframe with two columns "data" and "hue"
+    temp_df = pd.DataFrame({"data": data, "hue": hue})
+
+    # sort the dataframe by particle abunance i.e. how many particles of each type
+    hue_ordering = temp_df.groupby("hue").count().sort_values(by="data", ascending=False).index
+
+    g = sns.histplot(
+        data      = temp_df, 
+        x         = "data", 
+        bins      = bins, 
+        hue       = "hue",
+        hue_order = hue_ordering,
+        ax        = ax, 
+        element   = "step",
+        multiple  = "stack"
+    )
+    
+    if legend:
+        if legend_out:
+            sns.move_legend(ax, "upper left", bbox_to_anchor=(1, 1))
+        g.legend_.set_title(legend_title, prop={"size": fontsize, "family": "serif"})
+        # chage fontsize of the legend
+        for text in g.legend_.get_texts():
+            text.set_fontsize(fontsize)
+            text.set_fontname("serif")
+    
+    # Set the x and y labels
+    ax.set_xlabel(xlab, fontsize=fontsize, fontname="serif")
+    ax.set_ylabel(ylab, fontsize=fontsize, fontname="serif")
+    
+    # Set the plot title
+    ax.set_title(title, fontsize=fontsize+2, fontname="serif")
+    
+    # Set the tick parameters
+    ax.tick_params(axis="both", which="major", labelsize=fontsize, length=5)
+    
+    # Return the axis
+    return ax
