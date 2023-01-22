@@ -2,3 +2,4 @@ data/
 __pycache__/
 .ipynb_checkpoints/
 root_to_csv.ipynb
+.DS_Store
