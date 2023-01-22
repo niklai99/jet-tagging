@@ -6,7 +6,7 @@
 # The input file, output files, and data directory can be specified with the -in, -jet, -par, and -dir flags.
 # The default values are extracted_data.root, jet_df.csv, particle_df.csv, and ./data/ respectively.
 # The script can be run with the command: python make_dataset.py
-# The script can be run with the command: python make_dataset.py -in extracted_data.root -jet jet_df.csv -par particle_df.csv -dir ./data/
+# The script can be run with the command: python make_dataset.py -in extracted_data.root -jet jet_df.csv -par particle_df.csv -dir ../data/
 
 
 import argparse
@@ -32,7 +32,7 @@ def argParser():
     parser = argparse.ArgumentParser() 
     
     # Add the arguments to the parser object
-    parser.add_argument('-dir', '--directory', type=str, default='./data/',             help="data directory")
+    parser.add_argument('-dir', '--directory', type=str, default='../data/',            help="data directory")
     parser.add_argument('-in',  '--input',     type=str, default='extracted_data.root', help="input file name")
     parser.add_argument('-jet', '--jet',       type=str, default='jet_df.csv',          help="jet output file name")
     parser.add_argument('-par', '--particle',  type=str, default='particle_df.csv',     help="particle output file name")
