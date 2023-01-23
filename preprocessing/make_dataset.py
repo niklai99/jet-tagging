@@ -12,6 +12,7 @@
 import argparse
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 
 from Dataset import Dataset
 
@@ -133,14 +134,17 @@ def buildJetDataFrame(jet_features, par_features):
     Returns:
         pandas.DataFrame: A DataFrame of the jet features.
     """
+
+    global verbose
     
     # Initialize the columns of the DataFrame and add the event ID
     ev_id = np.arange(0, len(jet_features["jetID"]), 1, dtype=np.int16)
     jet_columns = ["eventID"] + list(jet_features.keys())[:1] + ["nParticles"] + list(jet_features.keys())[1:]
     jet_df = pd.DataFrame(columns=jet_columns)
+    jet_df_list = []
 
     # Loop over the events
-    for ev in ev_id:
+    for ev in tqdm(ev_id, disable=not verbose):
         # Get the unique jet IDs in the event
         jets = np.unique(jet_features["jetID"][ev])
 
@@ -166,8 +170,11 @@ def buildJetDataFrame(jet_features, par_features):
                 jet_features["jetTheta"][ev][i]
             ])
             # Add the row to the DataFrame
-            jet_df = jet_df.append(pd.DataFrame(jet_row.reshape(1, -1), columns=jet_columns), ignore_index=True)
+            jet_df_list.append(pd.DataFrame(jet_row.reshape(1, -1), columns=jet_columns))
             
+    # Concat all the DataFrame rows
+    jet_df = pd.concat(jet_df_list, ignore_index=True)   
+    del jet_df_list 
     # Set the correct data type for each column
     jet_df["eventID"]    = jet_df["eventID"].astype(np.int16)
     jet_df["jetID"]      = jet_df["jetID"].astype(np.int16)
@@ -188,14 +195,17 @@ def buildParticleDataFrame(jet_features, par_features):
     Returns:
         pandas.DataFrame: A DataFrame of the particle features.
     """
-    
+
+    global verbose
+
     # Initialize the columns of the DataFrame and add the event ID
     ev_id = np.arange(0, len(jet_features["jetID"]), 1, dtype=np.int16)
     particle_columns = ["eventID"] + ["jetID"] + list(par_features.keys())
     par_df = pd.DataFrame(columns=particle_columns)
+    par_df_list = []
 
     # Loop over the events
-    for ev in ev_id:
+    for ev in tqdm(ev_id, disable=not verbose):
         # Ge the number of particles in each jet
         nPartInJet   = list(np.unique(jet_features["jetID"][ev], return_counts=True)[1])
         # Loop over the jets
@@ -226,10 +236,13 @@ def buildParticleDataFrame(jet_features, par_features):
                     par_features["particlePhi"][ev][p], 
                     par_features["particleTheta"][ev][p]
                 ])
-                # Add the row to the DataFrame
-                par_df = par_df.append(pd.DataFrame(par_row.reshape(1, -1), columns=particle_columns), ignore_index=True)
+                # Add the row to the DataFrame list
+                par_df_list.append(pd.DataFrame(par_row.reshape(1, -1), columns=particle_columns))
                 offset += n
 
+    # Concat all the DataFrame rows
+    par_df = pd.concat(par_df_list, ignore_index=True)
+    del par_df_list
     # Set the correct data type for each column
     par_df["eventID"]       = par_df["eventID"].astype(np.int16)
     par_df["jetID"]         = par_df["jetID"].astype(np.int16)
@@ -239,6 +252,8 @@ def buildParticleDataFrame(jet_features, par_features):
     
  
 def main():  
+
+    global verbose
     
     # Load the input file
     input_file, jet_output, par_output, directory, verbose = parseArgs(argParser())
