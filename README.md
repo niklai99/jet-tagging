@@ -1,5 +1,7 @@
 # Advanced Machine-Learning Techniques for Improving Jet Tagging in Particle Physics: An Analysis of LHC Data Using Unsupervised Clustering and Particle Representation Methods
 
+![CMS Jet event](https://cds.cern.ch/record/2814439/files/TOP-21-012_1.png)
+
 This repository contains the code and materials for a research project on developing and testing advanced machine-learning algorithms for jet tagging in particle physics. The project focuses on identifying the particles that generated the jets, including W and Z bosons, $\tau$ leptons, and b quarks, as well as the QCD background. The research is based on recent jet tagging techniques, such as unsupervised clustering (UCluster) and a novel representation of jets as an unordered set of particles (ParticleNet).
 
 The project uses data from the Large Hadron Collider (LHC) from the CMS experiment, which is available through the [CMS Open Data Portal](http://opendata.cern.ch/search?page=1&size=20&subtype=Collision&type=Dataset&experiment=CMS&year=2012&year=2015&file_type=miniaod).
