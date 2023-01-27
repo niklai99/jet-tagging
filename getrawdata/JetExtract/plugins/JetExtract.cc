@@ -73,12 +73,13 @@ class JetExtract : public edm::one::EDAnalyzer<edm::one::SharedResources> {
       TTree *mtree;
 
       std::vector<int> jetID;
-      std::vector<double> jetArea;
+      std::vector<double> jetArea, jet_Px, jet_Py, jet_Pz, jet_E, jet_phi, jet_theta, jet_vx, jet_vy, jet_vz,
+                          jet_polarPx, jet_polarPy, jet_polarPz, jet_polarE, jet_rapidity;
       std::vector<int> particleID;
       std::vector<double> particle_Px, particle_Py, particle_Pz, particle_E, particle_phi, particle_theta, particle_vx, particle_vy, particle_vz,
-                          particle_polarPx, particle_polarPy, particle_polarPz, particle_polarE, 
-                          jet_Px, jet_Py, jet_Pz, jet_E, jet_phi, jet_theta, jet_vx, jet_vy, jet_vz,
-                          jet_polarPx, jet_polarPy, jet_polarPz, jet_polarE;
+                          particle_polarPx, particle_polarPy, particle_polarPz, particle_polarE, particle_rapidity;
+                          
+      std::vector<bool> isMuon, isElec, isPhoton, isJet;
       //std::vector<const reco::Track*> bestTracks;   //need a dictionary
       
 };
@@ -129,6 +130,8 @@ JetExtract::JetExtract(const edm::ParameterSet& iConfig):
    mtree->GetBranch("jet_polarPz")->SetTitle("jet z coordinate of polar 4-momentum, i.e. phi");
    mtree->Branch("jet_polarE",&jet_polarE);
    mtree->GetBranch("jet_polarE")->SetTitle("jet Energy coordinate of polar 4-momentum, i.e. mass");
+   mtree->Branch("jet_rapidity",&jet_rapidity);
+   mtree->GetBranch("jet_rapidity")->SetTitle("jet rapidity");
    mtree->Branch("jet_phi",&jet_phi);
    mtree->GetBranch("jet_phi")->SetTitle("jet azimuthal angle");
    mtree->Branch("jet_theta",&jet_theta);
@@ -157,12 +160,20 @@ JetExtract::JetExtract(const edm::ParameterSet& iConfig):
    mtree->GetBranch("particle_polarPz")->SetTitle("particle z coordinate of polar 4-momentum, i.e. phi");
    mtree->Branch("particle_polarE",&particle_polarE);
    mtree->GetBranch("particle_polarE")->SetTitle("particle Energy coordinate of polar 4-momentum, i.e. mass");
+   mtree->Branch("particle_rapidity",&particle_rapidity);
+   mtree->GetBranch("particle_rapidity")->SetTitle("particle rapidity");
    mtree->Branch("particleType",&particleID);
    mtree->GetBranch("particleType")->SetTitle("Particle type");
    mtree->Branch("particle_phi",&particle_phi);
    mtree->GetBranch("particle_phi")->SetTitle("particle azimuthal angle");
    mtree->Branch("particle_theta",&particle_theta);
    mtree->GetBranch("particle_theta")->SetTitle("particle polar angle");
+   mtree->Branch("isMuon",&isMuon);
+   mtree->GetBranch("isMuon")->SetTitle("is Muon");
+   mtree->Branch("isElectron",&isElectron);
+   mtree->GetBranch("isElectron")->SetTitle("is electron");
+   mtree->Branch("isPhoton",&isPhoton);
+   mtree->GetBranch("isPhoton")->SetTitle("is photon");
    //mtree->Branch("bestTracks",&bestTracks, 2);
    //mtree->GetBranch("bestTracks")->SetTitle("best Track pointer");
 
@@ -207,6 +218,11 @@ JetExtract::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    particle_polarE.clear();
    particle_phi.clear();
    particle_theta.clear();
+   particle_rapidity.clear();
+   isMuon.clear();
+   isElec.clear();
+   isPhoton.clear();
+   isJet.clear();
    //bestTracks.clear();
    jetArea.clear();
    jet_vx.clear();
@@ -222,6 +238,7 @@ JetExtract::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    jet_polarE.clear();
    jet_phi.clear();
    jet_theta.clear();
+   jet_rapidity.clear();
 
    if(fatjets.isValid()){
 
@@ -244,7 +261,7 @@ JetExtract::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
          jet_polarPy.push_back(jet.polarP4().eta());
          jet_polarPz.push_back(jet.polarP4().phi());
          jet_polarE.push_back(jet.polarP4().M());
-
+         jet_rapidity.push_back(jet.rapidity());
          jetArea.push_back(jet.jetArea());
          
          for (const reco::Jet::Constituent &particlePtr : jet.getJetConstituents()) {
@@ -269,7 +286,12 @@ JetExtract::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             particle_polarPy.push_back(particlePtr->polarP4().eta());
             particle_polarPz.push_back(particlePtr->polarP4().phi());
             particle_polarE.push_back(particlePtr->polarP4().M());
+            particle_rapidity.push_back(particlePtr->rapidity());
 
+            isMuon.push_back(particlePtr->isMuon());
+            isElec.push_back(particlePtr->isElectron());
+            isPhoton.push_back(particlePtr->isPhoton());
+            isJet.push_back(particlePtr->isJet());
             //bestTracks.push_back(particlePtr->bestTrack());
 
          }

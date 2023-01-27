@@ -113,10 +113,10 @@ def getParticleFeatures(dataset):
         "particlePy":       dataset.getParticlePy(),
         "particlePz":       dataset.getParticlePz(),
         "particleE":        dataset.getParticleE(),
-        "particlePolarPx":  dataset.getParticlePolarPx(),
-        "particlePolarPy":  dataset.getParticlePolarPy(),
-        "particlePolarPz":  dataset.getParticlePolarPz(),
-        "particlePolarE":   dataset.getParticlePolarE(),
+        "particlePolarPx":  dataset.getParticlePolarPx(),  # pt, transverse momentum
+        "particlePolarPy":  dataset.getParticlePolarPy(),  # eta, pseudorapidity
+        "particlePolarPz":  dataset.getParticlePolarPz(),  # phi, azimuthal angle
+        "particlePolarE":   dataset.getParticlePolarE(),   # M, mass
         "particlePhi":      dataset.getParticlePhi(),
         "particleTheta":    dataset.getParticleTheta(),
     }
