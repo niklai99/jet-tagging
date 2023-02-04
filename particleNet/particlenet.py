@@ -4,12 +4,12 @@ from torch import nn
 from edgeconv import EdgeConv
 
 class ParticleNet(nn.Module):
-    def __init__(self, encoded_space_dim):
+    def __init__(self, features, encoded_space_dim):
         super().__init__()
 
         # EDGE CONV PART
         self.edge_conv = nn.Sequential(
-            EdgeConv(d=16, k=10, C=[64,64,64]),
+            EdgeConv(d=features, k=10, C=[64,64,64]),
             EdgeConv(d=64, k=10, C=[128,128,128]),
             EdgeConv(d=128, k=10, C=[256,256,256])) #output shape = [B,n,256]
 
