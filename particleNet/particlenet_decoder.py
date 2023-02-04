@@ -4,6 +4,9 @@ import torch
 from edgeconv import EdgeConv
 
 
+# In this particular implementation the filters of the ConvTransposed1d
+# learn how to extract 1 particle features from the jet latent space 
+# representation (specilized over particles)
 class ParticleNetDecoder(nn.Module):
     
     def __init__(self, encoded_dim, n, d=16):
@@ -30,6 +33,25 @@ class ParticleNetDecoder(nn.Module):
 
         # up(dim)sampling through Conv2DTransposed on unsqueezed array
         y = nn.ConvTranspose1d(1, self.n, 1, 1)(y.unsqueeze(1))
+        
+        y = self.edgeconvs(y)
+        
+        return y
+    
+
+
+# In this particular implementation the filters of the ConvTransposed1d
+# learn how to map one feature to n different particles (specilized over features)
+class ParticleNetDecoder_1feat(ParticleNetDecoder):
+
+    def forward(self, x):
+
+        y = self.latent_to_up(x)
+
+        # up(dim)sampling through Conv2DTransposed on unsqueezed array
+        y = y.unsqueeze(-1).expand(-1,-1,self.n)
+        y = nn.ConvTranspose1d(y.shape[1], y.shape[1], 1, 1)(y).transpose(1, 2)
+
         y = self.edgeconvs(y)
         
         return y
