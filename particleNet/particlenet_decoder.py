@@ -47,7 +47,7 @@ class ParticleNetDecoder(nn.Module):
 # learn how to map one feature to n different particles (specilized over features)
 class ParticleNetDecoder_1feat(ParticleNetDecoder):
     def __init__(self, encoded_dim, n, d=16):
-        super().__init__(self, encoded_dim, n, d)
+        super().__init__(encoded_dim, n, d)
 
         self.upsampling = nn.ConvTranspose1d(256, 256, 1, 1)
 
