@@ -8,6 +8,7 @@ class DataReader:
     def __init__(self, path):
         
         self.path = path
+        self.data = None
         
     def get_filenames(self):
         
@@ -92,20 +93,24 @@ class DataReader:
     
     
     def get_labels(self):
-        
-        return self.data["labels"]
+        if self.data:
+            return self.data["labels"]
+        else:
+            raise RuntimeError('No data read, please call .read_files before!')
     
     def get_features(self):
-        
-        return np.stack(
-            (
-                self.data["dEta"],
-                self.data["dPhi"],
-                self.data["e"],
-                self.data["e_rel"],
-                self.data["pt"],
-                self.data["pt_rel"],
-                self.data["dR"],
-            ),
-            axis=2,
-        )
+        if self.data:
+            return np.stack(
+                (
+                    self.data["dEta"],
+                    self.data["dPhi"],
+                    self.data["e"],
+                    self.data["e_rel"],
+                    self.data["pt"],
+                    self.data["pt_rel"],
+                    self.data["dR"],
+                ),
+                axis=2,
+            ).astype(np.float32)
+        else:
+            raise RuntimeError('No data read, please call .read_files before!')

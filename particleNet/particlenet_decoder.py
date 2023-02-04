@@ -27,12 +27,15 @@ class ParticleNetDecoder(nn.Module):
             EdgeConv(64, 16, (64, 64, d))
         )
 
+        self.upsampling = nn.ConvTranspose1d(1, self.n, 1, 1)
+
+
     def forward(self, x):
 
         y = self.latent_to_up(x)
 
         # up(dim)sampling through Conv2DTransposed on unsqueezed array
-        y = nn.ConvTranspose1d(1, self.n, 1, 1)(y.unsqueeze(1))
+        y = self.upsampling(y.unsqueeze(1))
         
         y = self.edgeconvs(y)
         
@@ -43,6 +46,10 @@ class ParticleNetDecoder(nn.Module):
 # In this particular implementation the filters of the ConvTransposed1d
 # learn how to map one feature to n different particles (specilized over features)
 class ParticleNetDecoder_1feat(ParticleNetDecoder):
+    def __init__(self, encoded_dim, n, d=16):
+        super().__init__(self, encoded_dim, n, d)
+
+        self.upsampling = nn.ConvTranspose1d(256, 256, 1, 1)
 
     def forward(self, x):
 
@@ -50,7 +57,7 @@ class ParticleNetDecoder_1feat(ParticleNetDecoder):
 
         # up(dim)sampling through Conv2DTransposed on unsqueezed array
         y = y.unsqueeze(-1).expand(-1,-1,self.n)
-        y = nn.ConvTranspose1d(y.shape[1], y.shape[1], 1, 1)(y).transpose(1, 2)
+        y = self.upsampling(y).transpose(1, 2)
 
         y = self.edgeconvs(y)
         

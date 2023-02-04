@@ -29,7 +29,7 @@ class ParticleNet(nn.Module):
         y = self.edge_conv(x)
         y = nn.AvgPool1d(kernel_size=y.shape[1], stride=1)(y.transpose(1,2)).squeeze()
         y = self.final_part(y)
-        y= self.latent_space(y)
+        y = self.latent_space(y)
 
         return y
     
