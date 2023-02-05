@@ -49,15 +49,15 @@ class ParticleNetDecoder_1feat(ParticleNetDecoder):
     def __init__(self, encoded_dim, n, d=16):
         super().__init__(encoded_dim, n, d)
 
-        self.upsampling = nn.ConvTranspose1d(256, 256, 1, 1)
+        self.upsampling_feat = nn.ConvTranspose1d(256, 256, 1, 1)
 
     def forward(self, x):
 
         y = self.latent_to_up(x)
 
         # up(dim)sampling through Conv2DTransposed on unsqueezed array
-        y = y.unsqueeze(-1).expand(-1,-1,self.n)
-        y = self.upsampling(y).transpose(1, 2)
+        y = self.upsampling(y.unsqueeze(1))
+        y = self.upsampling_feat(y.transpose(1, 2)).transpose(1, 2)
 
         y = self.edgeconvs(y)
         
