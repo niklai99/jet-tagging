@@ -53,13 +53,13 @@ def compute_edge_features(data):
     edge_features_all = []
 
     # loop over all the jets
-    for k in tqdm(range(data.shape[0])):
-
-        # list to store the edge features for the current jet
-        edge_features = []
+    for k in range(data.shape[0]):
 
         # get the current jet
         jet = data[k, :, :]
+            
+        # list to store the edge features for the current jet
+        edge_features = []
 
         # loop over all the particles in the jet
         for i in range(jet.shape[0]):
@@ -73,15 +73,15 @@ def compute_edge_features(data):
         # store the edge features for the current jet
         edge_features = np.array(edge_features)
         edge_features_all.append(edge_features)
-
-    return np.array(edge_features_all)
+        
+    return np.array(edge_features_all, dtype=object)
 
 
 if __name__=='__main__':
     
     # load the dataset
     data_reader = DataReader("../data/train/")
-    data_reader.read_files(n_files=2)
+    data_reader.read_files(n_files=1)
     
     data = data_reader.get_features()
 
@@ -97,3 +97,4 @@ if __name__=='__main__':
     print("Saving the edge features...")
     h_file.create_dataset("edge_features", data=edge_features)
     h_file.close()
+    
