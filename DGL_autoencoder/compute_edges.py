@@ -19,10 +19,10 @@ def compute_R_ij(dEta_ij, dPhi_ij):
     """Compute the distance between two particles in the transverse plane."""
     return np.sqrt(dEta_ij**2 + dPhi_ij**2)
 
-def compute_m_ij(e_i, e_j, pt_i, pt_j, dPhi_ij):
+def compute_m_ij(pt_i, pt_j, dEta_ij, dPhi_ij):
     """Compute the invariant mass of two particles."""
-    # invariant mass of two massive particles as a function of the two energies, the two transverse momenta and the angle between them
-    return np.sqrt(2 * e_i * e_j * (1 - np.cos(dPhi_ij))) # CHECK THIS
+    # invariant mass of two massive particles as a function of the two transverse momenta and the angles between them
+    return np.sqrt(2 * pt_i * pt_j * (np.cosh(dEta_ij) - np.cos(dPhi_ij))) # RELATIVISTIC APPROX
 
 def node_distance(pt_i, pt_j, r, r_ij, alpha):
     """Compute the distance between two nodes in the graph."""
@@ -34,7 +34,7 @@ def compute_one_edge_feature(jet, i, j):
     dEta_ij = compute_dEta_ij(jet[i, 0], jet[j, 0])
     dPhi_ij = compute_dPhi_ij(jet[i, 1], jet[j, 1])
     dR_ij   = compute_R_ij(dEta_ij, dPhi_ij)
-    m_ij    = compute_m_ij(jet[i, 2], jet[j, 2], jet[i, 4], jet[j, 4], dPhi_ij)
+    m_ij    = compute_m_ij(jet[i, 4], jet[j, 4], dEta_ij, dPhi_ij)
 
     # compute the edge feature
     e_0 =        node_distance(pt_i=jet[i, 4], pt_j=jet[j, 4], r=jet[i, 6], r_ij=dR_ij, alpha=0)
