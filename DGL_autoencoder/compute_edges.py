@@ -1,5 +1,10 @@
 import numpy as np
+import h5py
+import os
 
+from tqdm import tqdm
+
+from DataReader import DataReader
 
 
 def compute_dPhi_ij(dPhi_i, dPhi_j):
@@ -48,7 +53,7 @@ def compute_edge_features(data):
     edge_features_all = []
 
     # loop over all the jets
-    for k in range(data.shape[0]):
+    for k in tqdm(range(data.shape[0])):
 
         # list to store the edge features for the current jet
         edge_features = []
@@ -70,3 +75,25 @@ def compute_edge_features(data):
         edge_features_all.append(edge_features)
 
     return np.array(edge_features_all)
+
+
+if __name__=='__main__':
+    
+    # load the dataset
+    data_reader = DataReader("../data/train/")
+    data_reader.read_files(n_files=2)
+    
+    data = data_reader.get_features()
+
+    # compute the edge features
+    print("Computing the edge features...")
+    edge_features = compute_edge_features(data)
+    
+    # save the edge features into a h5 file
+    if not os.path.exists("../data/train/edges"):
+        os.mkdir("../data/train/edges")
+        
+    h_file = h5py.File("../data/train/edges/edge_features.h5", "w")
+    print("Saving the edge features...")
+    h_file.create_dataset("edge_features", data=edge_features)
+    h_file.close()
