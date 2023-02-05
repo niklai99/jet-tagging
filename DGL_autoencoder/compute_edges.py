@@ -93,8 +93,4 @@ if __name__=='__main__':
     if not os.path.exists("../data/train/edges"):
         os.mkdir("../data/train/edges")
         
-    h_file = h5py.File("../data/train/edges/edge_features.h5", "w")
-    print("Saving the edge features...")
-    h_file.create_dataset("edge_features", data=edge_features)
-    h_file.close()
-    
+    np.savez("../data/train/edges/edge_features.npz", edges=edge_features)
