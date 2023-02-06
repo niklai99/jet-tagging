@@ -25,7 +25,7 @@ def get_graphs(jets):
         sources = []
         destinations = []
         for i in range(jet.shape[0]):
-            for j in range(jet.shape[1]):
+            for j in range(jet.shape[0]):
 
                 edge_features = np.ones(3) if i == j else compute_one_edge_feature(jet, i, j)
             
