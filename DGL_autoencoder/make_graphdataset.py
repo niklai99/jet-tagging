@@ -7,37 +7,33 @@ import torch
 from tqdm import tqdm
 import dgl
 
-from compute_edges import compute_one_edge_feature
+from compute_edges_vectorized import compute_1jet_edge_features
 from DataReader import DataReader_ragged
 
 
-def node_feature_one_jet(jet, i):
-    return np.log(jet[i], where=[False, False, True, True, True, True, False])
+def compute_1jet_nodes_features(jet):
+    mask = np.tile(np.array([False, False, True, True, True, True, False]), (jet.shape[0], 1))
+    result = jet.copy()
+    np.log(jet, where=mask, out=result)
+    return result
 
-def get_graphs(jets):
+def get_graphs(jets, desc):
     graphs = []
 
-    for jet in tqdm(jets):
+    for jet in tqdm(jets, desc):
 
         jet = jet.compressed().reshape((-1, jet.shape[-1]))
-        edges_features = []
-        nodes_features = []
-        sources = []
-        destinations = []
-        for i in range(jet.shape[0]):
-            for j in range(jet.shape[0]):
+        n   = jet.shape[0]
 
-                edge_features = np.ones(3) if i == j else compute_one_edge_feature(jet, i, j)
-            
-                edges_features.append(edge_features)
-                sources.append(i)
-                destinations.append(j)
+        sources = torch.arange(0, n).unsqueeze(1).expand((n, n)).flatten()
+        destinations = torch.arange(0, n).unsqueeze(0).expand((n, n)).flatten()
+        
+        edges_features = compute_1jet_edge_features(jet)
+        nodes_features = compute_1jet_nodes_features(jet)
 
-            nodes_features.append(node_feature_one_jet(jet, i))
-
-        g = dgl.graph((torch.tensor(sources), torch.tensor(destinations)))
-        g.edata['d'] = torch.tensor(np.stack(edges_features), dtype=torch.float32)
-        g.ndata['f'] = torch.tensor(np.stack(nodes_features), dtype=torch.float32)
+        g = dgl.graph((sources, destinations))
+        g.edata['d'] = torch.tensor(edges_features, dtype=torch.float32)
+        g.ndata['f'] = torch.tensor(nodes_features, dtype=torch.float32)
 
         graphs.append(g)
 
@@ -52,7 +48,13 @@ if __name__=='__main__':
     data_reader.read_files()
     
     jets = data_reader.get_features()
+    split = 20_000
 
-    graphs = get_graphs(jets)
+    for i in tqdm(range(0, jets.shape[0], split), 'files'):
+        f = i+split if i+split < jets.shape[0] else jets.shape[0]
 
-    dgl.save_graphs('graphs.dgl', graphs)
+        graphs = get_graphs(jets[i:f], f'Jets [{i}-{f}]')
+
+        dgl.save_graphs(f'../data/graphdataset/graphs{i}-{f}.dgl', graphs)
+
+    print('All done!')
