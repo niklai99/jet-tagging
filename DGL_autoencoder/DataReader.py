@@ -230,6 +230,6 @@ class DataReader_ragged:
                     self.data["dR"],
                 ),
                 axis=2,
-            ).astype(np.float32)
+            )
         else:
             raise RuntimeError('No data read, please call .read_files before!')

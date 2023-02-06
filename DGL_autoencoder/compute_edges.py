@@ -22,7 +22,7 @@ def compute_R_ij(dEta_ij, dPhi_ij):
 def compute_m_ij(pt_i, pt_j, dEta_ij, dPhi_ij):
     """Compute the invariant mass of two particles."""
     # invariant mass of two massive particles as a function of the two transverse momenta and the angles between them
-    return np.sqrt(2 * pt_i * pt_j * (np.cosh(dEta_ij) - np.cos(dPhi_ij))) # RELATIVISTIC APPROX
+    return np.sqrt(2. * pt_i * pt_j * np.cosh(dEta_ij) - 2. * pt_i * pt_j * np.cos(dPhi_ij)) # RELATIVISTIC APPROX
 
 def node_distance(pt_i, pt_j, r, r_ij, alpha):
     """Compute the distance between two nodes in the graph."""
@@ -39,7 +39,11 @@ def compute_one_edge_feature(jet, i, j):
     # compute the edge feature
     e_0 =        node_distance(pt_i=jet[i, 4], pt_j=jet[j, 4], r=jet[i, 6], r_ij=dR_ij, alpha=0)
     e_1 = np.log(node_distance(pt_i=jet[i, 4], pt_j=jet[j, 4], r=jet[i, 6], r_ij=dR_ij, alpha=1))
-    e_2 = np.log(m_ij)
+    if m_ij == 0.:
+        print(f'got zero m_ij for i={i}, j={j}\n pti={jet[i, 4]}, ptj={jet[j, 4]}, dEta_ij={dEta_ij}, dPhi_ij={dPhi_ij}')
+        e_2 = -1e6
+    else:
+        e_2 = np.log(m_ij)
 
     return np.array([e_0, e_1, e_2])
     
