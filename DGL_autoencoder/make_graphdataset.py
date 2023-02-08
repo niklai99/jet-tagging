@@ -17,10 +17,10 @@ def compute_1jet_nodes_features(jet):
     np.log(jet, where=mask, out=result)
     return result
 
-def get_graphs(jets, desc):
+def get_graphs(jets, labels, desc):
     graphs = []
 
-    for jet in tqdm(jets, desc):
+    for jet, label in zip(tqdm(jets, desc), labels):
 
         jet = jet.compressed().reshape((-1, jet.shape[-1]))
         n   = jet.shape[0]
@@ -32,8 +32,9 @@ def get_graphs(jets, desc):
         nodes_features = compute_1jet_nodes_features(jet)
 
         g = dgl.graph((sources, destinations))
-        g.edata['d'] = torch.tensor(edges_features, dtype=torch.float32)
-        g.ndata['f'] = torch.tensor(nodes_features, dtype=torch.float32)
+        g.edata['d']      = torch.tensor(edges_features, dtype=torch.float32)
+        g.ndata['f']      = torch.tensor(nodes_features, dtype=torch.float32)
+        g.ndata['labels'] = label.unsqueeze(0).expand((n, 6))
 
         graphs.append(g)
 
@@ -45,15 +46,16 @@ if __name__=='__main__':
     
     # load the dataset
     data_reader = DataReader_ragged("../data/train/")
-    data_reader.read_files()
+    data_reader.read_files(5)
     
     jets = data_reader.get_features()
+    labels = torch.tensor(data_reader.get_labels())
     split = 20_000
 
     for i in tqdm(range(0, jets.shape[0], split), 'files'):
         f = i+split if i+split < jets.shape[0] else jets.shape[0]
 
-        graphs = get_graphs(jets[i:f], f'Jets [{i}-{f}]')
+        graphs = get_graphs(jets[i:f], labels[i:f], f'Jets [{i}-{f}]')
 
         dgl.save_graphs(f'../data/graphdataset/graphs{i}-{f}.dgl', graphs)
 
