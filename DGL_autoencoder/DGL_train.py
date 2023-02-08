@@ -257,18 +257,20 @@ def val_epoch2(autoencoder, device, dataloader):
 
 if __name__ == '__main__':
 
-    labels_2_load = [2, 4]
+    labels_2_load = [1]
+    batch_size = 64
+    encoded_space_dim = 6
+
     train_files = slice(15)
     val_files   = slice(15, 20)
 
     train_dataset = GraphDataset(data_path, train_files, labels_2_load)
     val_dataset   = GraphDataset(data_path, val_files, labels_2_load)
 
-    train_dataloader = GraphDataLoader(train_dataset, batch_size=64, shuffle=True)
-    val_dataloader   = GraphDataLoader(val_dataset, batch_size=64, shuffle=True)
+    train_dataloader = GraphDataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    val_dataloader   = GraphDataLoader(val_dataset, batch_size=batch_size, shuffle=True)
 
     ### Initialize the two networks
-    encoded_space_dim = 10
     encoder = Encoder(latent_space_dim=encoded_space_dim)
     decoder = Decoder(latent_space_dim=encoded_space_dim)
 
@@ -305,7 +307,7 @@ if __name__ == '__main__':
     autoencoder.to(device)
 
     # train the model
-    epochs = 20
+    epochs = 15
     train_losses = []
     val_losses = []
     for epoch in range(epochs):
@@ -337,7 +339,7 @@ if __name__ == '__main__':
         if optimizer.param_groups[0]['lr'] < 1e-8:
             break
 
-    model_name = f"_{epochs}ep64batch_wt"
+    model_name = f"_{epochs}ep{batch_size}batch{encoded_space_dim}ld_q"
     print('Saving loss history')
     np.save('trainloss_history'+model_name, np.array(train_losses))
     np.save('valloss_history'+model_name, np.array(val_losses))
