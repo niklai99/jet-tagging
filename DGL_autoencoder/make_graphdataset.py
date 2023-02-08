@@ -46,7 +46,7 @@ if __name__=='__main__':
     
     # load the dataset
     data_reader = DataReader_ragged("../data/train/")
-    data_reader.read_files(5)
+    data_reader.read_files()
     
     jets = data_reader.get_features()
     labels = torch.tensor(data_reader.get_labels())
