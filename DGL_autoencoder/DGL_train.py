@@ -17,7 +17,7 @@ data_path = '../data/graphdataset/'
 
 
 class GraphDataset(Dataset):
-    def __init__(self, data_path, n_files=None, transform=None):
+    def __init__(self, data_path, n_files=None, lbl_to_load=None, transform=None):
 
         self.fnames    = [fname for fname in os.listdir(data_path) if fname.endswith('.dgl')]
         self.data_path = data_path
@@ -26,6 +26,7 @@ class GraphDataset(Dataset):
             self.fnames = self.fnames[n_files]
 
         self.transform = transform     
+        self.lbl_2_load = lbl_to_load
 
         self.load_graphs()
 
@@ -34,8 +35,11 @@ class GraphDataset(Dataset):
         self.graphs = []
 
         for fname in tqdm(self.fnames, 'Reading files'):
-            graphs = dgl.load_graphs(os.path.join(self.data_path, fname))[0]
-            self.graphs.extend(graphs)
+            graphs, _ = dgl.load_graphs(os.path.join(self.data_path, fname))
+            if self.lbl_2_load:
+                self.graphs.extend([graph for graph in graphs if graph.ndata['labels'][0].nonzero().squeeze() in self.lbl_2_load])
+            else:
+                self.graphs.extend(graphs)
 
 
     def __len__(self):
@@ -51,7 +55,7 @@ class GraphDataset(Dataset):
             x = self.transform(x)
         
         return x
-    
+            
 
 class Encoder(nn.Module):
     
@@ -253,17 +257,18 @@ def val_epoch2(autoencoder, device, dataloader):
 
 if __name__ == '__main__':
 
-    train_files = slice(10)
-    val_files   = slice(10, 13)
+    labels_2_load = [2, 4]
+    train_files = slice(15)
+    val_files   = slice(15, 20)
 
-    train_dataset = GraphDataset(data_path, train_files)
-    val_dataset   = GraphDataset(data_path, val_files)
+    train_dataset = GraphDataset(data_path, train_files, labels_2_load)
+    val_dataset   = GraphDataset(data_path, val_files, labels_2_load)
 
     train_dataloader = GraphDataLoader(train_dataset, batch_size=64, shuffle=True)
     val_dataloader   = GraphDataLoader(val_dataset, batch_size=64, shuffle=True)
 
     ### Initialize the two networks
-    encoded_space_dim = 6
+    encoded_space_dim = 10
     encoder = Encoder(latent_space_dim=encoded_space_dim)
     decoder = Decoder(latent_space_dim=encoded_space_dim)
 
@@ -300,7 +305,7 @@ if __name__ == '__main__':
     autoencoder.to(device)
 
     # train the model
-    epochs = 80
+    epochs = 20
     train_losses = []
     val_losses = []
     for epoch in range(epochs):
@@ -332,11 +337,12 @@ if __name__ == '__main__':
         if optimizer.param_groups[0]['lr'] < 1e-8:
             break
 
+    model_name = f"_{epochs}ep64batch_wt"
     print('Saving loss history')
-    np.save('trainloss_history', np.array(train_losses))
-    np.save('valloss_history', np.array(val_losses))
+    np.save('trainloss_history'+model_name, np.array(train_losses))
+    np.save('valloss_history'+model_name, np.array(val_losses))
 
-    model_name = f"_{epochs}ep64batch"
+    
     print('Saving state_dict')
     torch.save(autoencoder.state_dict(), 'models/autoenc_sd' + model_name + '.pkl')
     print('Other saves')
